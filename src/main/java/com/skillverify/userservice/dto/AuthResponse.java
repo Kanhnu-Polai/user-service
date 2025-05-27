@@ -1,12 +1,16 @@
 package com.skillverify.userservice.dto;
 
-import lombok.Data;
 
-@Data
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class AuthResponse {
-	 private String token;
+	 
 	    private String email;
 	    private String role;
+	    private String status;
 	
 
 }

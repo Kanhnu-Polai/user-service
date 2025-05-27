@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.skillverify.userservice.dto.UserDataDto;
 import com.skillverify.userservice.entity.UserData;
+import com.skillverify.userservice.exception.UserNotFoundException;
 import com.skillverify.userservice.repository.UserDataRepository;
 
 @Service
@@ -124,17 +125,9 @@ public class UserDataServiceImpl implements UserDataService {
                 .role(userData.getRole())
                 .build();
     }
+
+
+
 }
 
-// Custom exceptions for better error handling
-class UserNotFoundException extends RuntimeException {
-    public UserNotFoundException(String message) {
-        super(message);
-    }
-}
 
-class UserAlreadyExistsException extends RuntimeException {
-    public UserAlreadyExistsException(String message) {
-        super(message);
-    }
-}

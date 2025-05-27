@@ -1,10 +1,9 @@
 package com.skillverify.userservice.exception;
 
-public class UserNotFoundException extends RuntimeException {
-	
+public class TokenValidationException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
 
-	public UserNotFoundException(String message) {
+	public TokenValidationException(String message) {
 		super(message);
 	}
 
