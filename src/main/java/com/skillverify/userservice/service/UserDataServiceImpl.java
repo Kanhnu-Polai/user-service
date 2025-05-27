@@ -2,7 +2,7 @@ package com.skillverify.userservice.service;
 
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,8 +14,16 @@ import com.skillverify.userservice.repository.UserDataRepository;
 @Service
 public class UserDataServiceImpl implements UserDataService {
 
-    @Autowired
-    private UserDataRepository repository;
+
+    private final UserDataRepository repository;
+    
+    private final ModelMapper mapper;
+    
+    
+    public UserDataServiceImpl(UserDataRepository repository,ModelMapper mapper) {
+    	this.repository = repository;
+    	this.mapper = mapper;
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -33,35 +41,14 @@ public class UserDataServiceImpl implements UserDataService {
     @Override
     @Transactional
     public UserDataDto updateUserData(String email, UserDataDto updateData) {
-        if (email == null || email.trim().isEmpty()) {
-            throw new IllegalArgumentException("Email cannot be null or empty");
-        }
-        if (updateData == null) {
-            throw new IllegalArgumentException("Update data cannot be null");
-        }
-
+    	
         UserData existingUser = repository.findByEmail(email)
             .orElseThrow(() -> new UserNotFoundException("User with email " + email + " not found"));
 
    
-        if (updateData.getFullName() != null) {
-            existingUser.setFullName(updateData.getFullName());
-        }
-        if (updateData.getPhone() != null) {
-            existingUser.setPhone(updateData.getPhone());
-        }
-        if (updateData.getBio() != null) {
-            existingUser.setBio(updateData.getBio());
-        }
-        if (updateData.getResumeLink() != null) {
-            existingUser.setResumeLink(updateData.getResumeLink());
-        }
-        if (updateData.getPhotoUrl() != null) {
-            existingUser.setPhotoUrl(updateData.getPhotoUrl());
-        }
-        if (updateData.getRole() != null) {
-            existingUser.setRole(updateData.getRole());
-        }
+        
+        mapper.map(updateData,existingUser);
+        
 
         UserData updatedUser = repository.save(existingUser);
         return convertToDto(updatedUser);
@@ -101,29 +88,11 @@ public class UserDataServiceImpl implements UserDataService {
     }
 
     private UserData convertToEntity(UserDataDto data) {
-        return UserData.builder()
-                .id(data.getId())
-                .fullName(data.getFullName())
-                .email(data.getEmail())
-                .phone(data.getPhone())
-                .bio(data.getBio())
-                .resumeLink(data.getResumeLink())
-                .photoUrl(data.getPhotoUrl())
-                .role(data.getRole())
-                .build();
+        return mapper.map(data, UserData.class);
     }
 
     private UserDataDto convertToDto(UserData userData) {
-        return UserDataDto.builder()
-                .id(userData.getId())
-                .fullName(userData.getFullName())
-                .email(userData.getEmail())
-                .phone(userData.getPhone())
-                .bio(userData.getBio())
-                .resumeLink(userData.getResumeLink())
-                .photoUrl(userData.getPhotoUrl())
-                .role(userData.getRole())
-                .build();
+        return mapper.map(userData, UserDataDto.class);
     }
 
 

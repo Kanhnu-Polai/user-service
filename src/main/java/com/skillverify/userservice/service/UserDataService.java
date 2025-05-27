@@ -1,7 +1,5 @@
 package com.skillverify.userservice.service;
 
-import org.hibernate.internal.util.StringHelper;
-
 import com.skillverify.userservice.dto.UserDataDto;
 
 public interface UserDataService {
