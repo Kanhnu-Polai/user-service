@@ -37,8 +37,8 @@ public class UserDataController {
     	log.info(authHeader);
         String token = extractToken(authHeader);
         ;
-        System.out.println(token);
-        log.info("Generated token ", token);
+   
+        log.info("Generated token {} ", token);
 
         // 2. Get email and role from JWT token (calls auth-service internally)
         String tokenEmail = jwtUtil.getEmailFromToken(token);
