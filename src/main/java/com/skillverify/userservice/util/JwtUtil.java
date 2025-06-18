@@ -8,27 +8,21 @@ import org.springframework.web.servlet.function.ServerRequest.Headers;
 import com.skillverify.userservice.dto.AuthResponse;
 import com.skillverify.userservice.exception.InvalidTokenException;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.HttpHeaders;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class JwtUtil {
 
     private final RestClient restClient;
-    private final String authServiceUrl;
-
-
-    public JwtUtil(@Value("${auth.service.validate.url}") String authServiceUrl) {
-        this.restClient = RestClient.builder()
-                .baseUrl(authServiceUrl)
-                .build();
-        this.authServiceUrl = authServiceUrl;
-    }
-
-    
    
+    
+   @Value("${auth.service.base-url}")
+    private String authServiceBaseUrl;
 
     public AuthResponse getAuthDetails(String token) {
     	
@@ -38,7 +32,7 @@ public class JwtUtil {
     	 log.info("Generated token {}",token);
         try {
             return restClient.get()
-                    .uri("http://localhost:8080/api/auth/validate")
+                    .uri(authServiceBaseUrl+"/api/auth/validate")
                     .headers(h->h.addAll(headers))
                     .retrieve()
                     .body(AuthResponse.class);
