@@ -1,114 +1,71 @@
 package com.skillverify.userservice.controller;
 
+import com.skillverify.userservice.dto.UserDataDto;
+import com.skillverify.userservice.service.UserDataService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.skillverify.userservice.dto.UserDataDto;
-import com.skillverify.userservice.exception.UnauthorizedException;
-import com.skillverify.userservice.service.UserDataService;
-import com.skillverify.userservice.util.JwtUtil;
-
-import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
-
+@CrossOrigin(origins = "http://localhost:5173") 
 @RestController
 @RequestMapping("/api/users")
 @Slf4j
+@RequiredArgsConstructor
 public class UserDataController {
 
     private final UserDataService userDataService;
-    private final JwtUtil jwtUtil;
 
-    public UserDataController(UserDataService userDataService, JwtUtil jwtUtil) {
-        this.userDataService = userDataService;
-        this.jwtUtil = jwtUtil;
-    }
+    
 
     private final String className = this.getClass().getSimpleName();
 
+    /**
+     * Create new user
+     */
     @PostMapping("/create")
     public ResponseEntity<UserDataDto> createUser(
-            @Valid @RequestBody UserDataDto userDataDto,
-            @RequestHeader("Authorization") String authHeader) {
-
-        String methodName = "createUser";
-        log.info("{} || {} : Received request to create user with email: {}", className, methodName, userDataDto.getEmail());
-
-        String token = extractToken(authHeader);
-        String tokenEmail = jwtUtil.getEmailFromToken(token);
-        String tokenRole = jwtUtil.getRoleFromToken(token);
-
-        log.info("{} || {} : Token email: {}, Token role: {}", className, methodName, tokenEmail, tokenRole);
-
-        if (!"ADMIN".equals(tokenRole) && !tokenEmail.equals(userDataDto.getEmail())) {
-            log.warn("{} || {} : Unauthorized access attempt by {} with role {}", className, methodName, tokenEmail, tokenRole);
-            throw new UnauthorizedException("You are not authorized to create or update this user's data.");
-        }
+            @Valid @RequestBody UserDataDto userDataDto) {
+        
+        String method = "createUser";
+        log.info("{} || {} : Request to create user: {}", className, method, userDataDto.getEmail());
 
         UserDataDto createdUser = userDataService.addUserData(userDataDto);
-        log.info("{} || {} : User created successfully: {}", className, methodName, createdUser.getEmail());
 
+        log.info("{} || {} : User created successfully: {}", className, method, createdUser.getEmail());
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
+    /**
+     * Get user by email
+     */
     @GetMapping("/email/{email}")
-    public ResponseEntity<UserDataDto> getUserByEmail(
-            @PathVariable String email,
-            @RequestHeader("Authorization") String authHeader) {
-
-        String methodName = "getUserByEmail";
-        log.info("{} || {} : Received request to get user by email: {}", className, methodName, email);
-
-        String token = extractToken(authHeader);
-        String tokenEmail = jwtUtil.getEmailFromToken(token);
-
-        log.info("{} || {} : Token email: {}", className, methodName, tokenEmail);
-
-        if (!tokenEmail.equals(email)) {
-            log.warn("{} || {} : Unauthorized access attempt by {}", className, methodName, tokenEmail);
-            throw new UnauthorizedException("You are not authorized to access this user's data.");
-        }
+    public ResponseEntity<UserDataDto> getUserByEmail(@PathVariable String email) {
+        String method = "getUserByEmail";
+        log.info("{} || {} : Fetching user by email: {}", className, method, email);
 
         UserDataDto userData = userDataService.getUserByEmail(email);
-        log.info("{} || {} : Retrieved user data: {}", className, methodName, userData);
 
-        return ResponseEntity.status(HttpStatus.OK).body(userData);
+        log.info("{} || {} : User fetched: {}", className, method, userData.getEmail());
+        return ResponseEntity.ok(userData);
     }
 
-    @PostMapping("/update/{email}")
+    /**
+     * Update user by email
+     */
+    @PutMapping("/update/{email}")
     public ResponseEntity<UserDataDto> updateUser(
             @PathVariable String email,
-            @RequestBody UserDataDto updateData,
-            @RequestHeader("Authorization") String authHeader) {
-
-        String methodName = "updateUser";
-        log.info("{} || {} : Received request to update user with email: {}", className, methodName, email);
-
-        String token = extractToken(authHeader);
-        String tokenEmail = jwtUtil.getEmailFromToken(token);
-
-        log.info("{} || {} : Token email: {}", className, methodName, tokenEmail);
-
-        if (!tokenEmail.equals(email)) {
-            log.warn("{} || {} : Unauthorized access attempt by {}", className, methodName, tokenEmail);
-            throw new UnauthorizedException("You are not authorized to update this user's data.");
-        }
+            @Valid @RequestBody UserDataDto updateData) {
+        
+        String method = "updateUser";
+        log.info("{} || {} : Updating user with email: {}", className, method, email);
 
         UserDataDto updatedUser = userDataService.updateUserData(email, updateData);
-        log.info("{} || {} : User updated successfully: {}", className, methodName, updatedUser);
 
-        return ResponseEntity.status(HttpStatus.OK).body(updatedUser);
-    }
-
-    private String extractToken(String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.error("{} || extractToken : Invalid or missing Authorization header", className);
-            throw new UnauthorizedException("Invalid or missing Authorization header");
-        }
-
-        String token = authHeader.substring(7);
-        log.info("{} || extractToken : Token extracted: {}", className, token);
-        return token;
+        log.info("{} || {} : User updated: {}", className, method, updatedUser.getEmail());
+        return ResponseEntity.ok(updatedUser);
     }
 }
